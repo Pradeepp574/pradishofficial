@@ -56,6 +56,7 @@ h2{font-size:clamp(1.8rem,4.5vw,2.7rem);line-height:1.15;letter-spacing:-.03em;m
 .li{display:grid;grid-template-columns:1.1fr 2fr auto;gap:18px;align-items:center;padding:18px 0;border-top:1px solid var(--line)}
 .li b{font-size:1.05rem}
 .li span{color:var(--muted)}
+.li a{color:var(--cyan);font-weight:700;white-space:nowrap}
 .li em{font-style:normal;font-size:.82rem;color:var(--cyan);border:1px solid var(--line);border-radius:999px;padding:3px 12px;white-space:nowrap}
 .about{display:grid;grid-template-columns:.8fr 1.2fr;gap:48px;align-items:center}
 .photo{position:relative;aspect-ratio:4/5;border-radius:22px;overflow:hidden;border:1px solid var(--line);background:linear-gradient(145deg,#0e2a66,#050b1f);display:grid;place-items:center;font-size:4.5rem;font-weight:900;font-style:italic;color:var(--cyan);box-shadow:0 0 70px rgba(47,140,255,.22)}
@@ -169,7 +170,7 @@ section{padding:56px 0}
   <div class="wrap">
     <h2>Latest from PRADISH</h2>
     <p class="lead">New vlogs, tutorials and projects will appear here.</p>
-    <div class="list">
+    <div class="list" id="posts">
       <div class="li"><b>🎬 Vlogs</b><span>My first vlog is on the way.</span><em>Coming soon</em></div>
       <div class="li"><b>📝 Tutorials</b><span>My first lesson or guide is on the way.</span><em>Coming soon</em></div>
       <div class="li"><b>🛠️ Projects</b><span>What I'm building and what I learned.</span><em>Coming soon</em></div>
@@ -207,6 +208,19 @@ if(SITE.whatsapp){add($("actions"),"💬 WhatsApp",ok(SITE.whatsapp)?SITE.whatsa
 if(SITE.location){$("loc").textContent="📍 "+SITE.location;any=true}
 [["Facebook",SITE.facebook],["YouTube",SITE.youtube],["Instagram",SITE.instagram],["TikTok",SITE.tiktok],["LINE",SITE.line]].forEach(([n,u])=>{if(ok(u)){add($("social"),n+" ↗",u,"chip",1);any=true}});
 $("soon").hidden=any;
+/* POSTS: read from posts.json (edit that file on GitHub to add posts) */
+fetch("posts.json",{cache:"no-store"}).then(r=>r.json()).then(list=>{
+if(!Array.isArray(list)||!list.length)return;
+const box=$("posts");box.textContent="";
+const ico={vlog:"🎬",tutorial:"📝",project:"🛠️"};
+list.forEach(p=>{if(!p||!p.title)return;
+const row=document.createElement("div");row.className="li";
+const b=document.createElement("b");b.textContent=(ico[String(p.type||"").toLowerCase()]||"📌")+" "+p.title;
+const sp=document.createElement("span");sp.textContent=p.text||"";
+row.appendChild(b);row.appendChild(sp);
+if(ok(p.link)){const a=document.createElement("a");a.href=p.link;a.target="_blank";a.rel="noopener";a.textContent="Open →";row.appendChild(a)}
+box.appendChild(row)});
+}).catch(()=>{});
 $("year").textContent=new Date().getFullYear();
 $("menu").addEventListener("click",()=>$("links").classList.toggle("open"));
 document.querySelectorAll(".links a").forEach(a=>a.addEventListener("click",()=>$("links").classList.remove("open")));
