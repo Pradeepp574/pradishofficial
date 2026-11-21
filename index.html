@@ -56,6 +56,7 @@ h2{font-size:clamp(1.8rem,4.5vw,2.7rem);line-height:1.15;letter-spacing:-.03em;m
 .li{display:grid;grid-template-columns:1.1fr 2fr auto;gap:18px;align-items:center;padding:18px 0;border-top:1px solid var(--line)}
 .li b{font-size:1.05rem}
 .li span{color:var(--muted)}
+.pw .embed{padding:0 0 20px}.embed iframe,.embed img{display:block;width:100%;max-width:560px;border:0;border-radius:14px}.embed iframe{aspect-ratio:16/9}.embed img{height:auto}
 .li a{color:var(--cyan);font-weight:700;white-space:nowrap}
 .li em{font-style:normal;font-size:.82rem;color:var(--cyan);border:1px solid var(--line);border-radius:999px;padding:3px 12px;white-space:nowrap}
 .about{display:grid;grid-template-columns:.8fr 1.2fr;gap:48px;align-items:center}
@@ -209,17 +210,24 @@ if(SITE.location){$("loc").textContent="📍 "+SITE.location;any=true}
 [["Facebook",SITE.facebook],["YouTube",SITE.youtube],["Instagram",SITE.instagram],["TikTok",SITE.tiktok],["LINE",SITE.line]].forEach(([n,u])=>{if(ok(u)){add($("social"),n+" ↗",u,"chip",1);any=true}});
 $("soon").hidden=any;
 /* POSTS: read from posts.json (edit that file on GitHub to add posts) */
+function plat(u){const h=(u.match(/^https?:\/\/([^\/]+)/i)||[])[1]||"";h.toLowerCase();
+if(/youtu/.test(h))return"▶️ YouTube";if(/facebook|fb\.com/.test(h))return"📘 Facebook";if(/instagram/.test(h))return"📸 Instagram";if(/tiktok/.test(h))return"🎵 TikTok";if(/line\.me/.test(h))return"💬 LINE";return"🔗 Link"}
+function ytId(u){const m=u.match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);return m?m[1]:""}
 fetch("posts.json",{cache:"no-store"}).then(r=>r.json()).then(list=>{
 if(!Array.isArray(list)||!list.length)return;
 const box=$("posts");box.textContent="";
-const ico={vlog:"🎬",tutorial:"📝",project:"🛠️"};
 list.forEach(p=>{if(!p||!p.title)return;
+const wrap=document.createElement("div");wrap.className="pw";
 const row=document.createElement("div");row.className="li";
-const b=document.createElement("b");b.textContent=(ico[String(p.type||"").toLowerCase()]||"📌")+" "+p.title;
+const b=document.createElement("b");b.textContent=(ok(p.link)?plat(p.link).split(" ")[0]:"📌")+" "+p.title;
 const sp=document.createElement("span");sp.textContent=p.text||"";
 row.appendChild(b);row.appendChild(sp);
 if(ok(p.link)){const a=document.createElement("a");a.href=p.link;a.target="_blank";a.rel="noopener";a.textContent="Open →";row.appendChild(a)}
-box.appendChild(row)});
+wrap.appendChild(row);
+const id=ok(p.link)?ytId(p.link):"";
+if(id&&/youtu/.test(p.link)){const d=document.createElement("div");d.className="embed";const f=document.createElement("iframe");f.src="https://www.youtube-nocookie.com/embed/"+id;f.title=p.title;f.loading="lazy";f.allowFullscreen=true;f.referrerPolicy="strict-origin-when-cross-origin";d.appendChild(f);wrap.appendChild(d)}
+else if(p.image&&!/^\s*javascript:/i.test(p.image)){const d=document.createElement("div");d.className="embed";const im=document.createElement("img");im.src=p.image;im.alt=p.title;im.loading="lazy";im.decoding="async";d.appendChild(im);wrap.appendChild(d)}
+box.appendChild(wrap)});
 }).catch(()=>{});
 $("year").textContent=new Date().getFullYear();
 $("menu").addEventListener("click",()=>$("links").classList.toggle("open"));
